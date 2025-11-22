@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Courses • Registration System</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="/js/main.js" defer></script>
+  </head>
+  <body>
+    <%- include('partials/navbar') %>
+    <main class="container">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Curriculum</p>
+          <h1>Courses & Offerings</h1>
+        </div>
+        <p class="page-description">
+          Maintain catalog entries and term-specific sections with seat availability tracking.
+        </p>
+      </header>
+      <%- include('partials/messages') %>
+
+      <section class="panel">
+        <header class="panel-header">
+          <h2>Course Catalog</h2>
+        </header>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Credits</th>
+                <th>Department</th>
+                <th>Description</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (courses.length) { %>
+                <% courses.forEach((course) => { %>
+                  <tr>
+                    <td><%= course.courseID %></td>
+                    <td><%= course.courseName %></td>
+                    <td><%= course.credits %></td>
+                    <td><%= course.department_name || course.departmentID %></td>
+                    <td><%= course.description || '—' %></td>
+                    <td>
+                      <form
+                        action="/courses/delete/<%= course.courseID %>"
+                        method="post"
+                        onsubmit="return confirmDelete()"
+                      >
+                        <button type="submit" class="btn danger ghost">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="7">No courses found.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <% const departmentOptions = departments.map((dept) => ({ value: dept.departmentID, label: dept.deptName })); %>
+
+      <div class="panel-grid">
+        <section class="panel">
+          <h2>Add Course</h2>
+          <form action="/courses/create" method="post" class="form-grid">
+            <%- include('partials/form-fields', {
+              fields: courseFields,
+              includePrimary: false,
+              selectOptions: { departmentID: departmentOptions }
+            }) %>
+            <button type="submit" class="btn primary">Create</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Update Course</h2>
+          <form action="/courses/update" method="post" class="form-grid">
+            <%- include('partials/form-fields', {
+              fields: courseFields,
+              includePrimary: true,
+              selectOptions: { departmentID: departmentOptions }
+            }) %>
+            <button type="submit" class="btn">Update</button>
+          </form>
+        </section>
+      </div>
+
+      <section class="panel">
+        <header class="panel-header">
+          <h2>Course Offerings</h2>
+          <p>Real-time seat tracking per section</p>
+        </header>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Offering</th>
+                <th>Course</th>
+                <th>Professor</th>
+                <th>Term</th>
+                <th>Capacity</th>
+                <th>Available</th>
+                <th>Location</th>
+                <th>Schedule</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (offerings.length) { %>
+                <% offerings.forEach((offering) => { %>
+                  <tr>
+                    <td>#<%= offering.offeringID %></td>
+                    <td>
+                      <strong><%= offering.courseName %></strong>
+                      <small><%= offering.credits %> credits</small>
+                    </td>
+                    <td><%= offering.firstName %> <%= offering.lastName %></td>
+                    <td><%= offering.semester %> <%= offering.year %></td>
+                    <td><%= offering.capacity %></td>
+                    <td class="<%= offering.seats_available <= 5 ? 'warning' : '' %>">
+                      <%= offering.seats_available %>
+                    </td>
+                    <td><%= offering.roomNumber || '—' %></td>
+                    <td><%= offering.scheduleTime || '—' %></td>
+                    <td>
+                      <form
+                        action="/courses/offerings/delete/<%= offering.offeringID %>"
+                        method="post"
+                        onsubmit="return confirmDelete()"
+                      >
+                        <button type="submit" class="btn danger ghost">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="9">No offerings found.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <% 
+        const professorOptions = professors.map((prof) => ({
+          value: prof.professorID,
+          label: `${prof.lastName}, ${prof.firstName}`
+        }));
+        const courseOptionsList = courseOptions.map((c) => ({
+          value: c.courseID,
+          label: c.courseName
+        }));
+      %>
+
+      <div class="panel-grid">
+        <section class="panel">
+          <h2>Add Offering</h2>
+          <form action="/courses/offerings/create" method="post" class="form-grid">
+            <%- include('partials/form-fields', {
+              fields: offeringFields,
+              includePrimary: false,
+              selectOptions: { courseID: courseOptionsList, professorID: professorOptions }
+            }) %>
+            <button type="submit" class="btn primary">Create</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Update Offering</h2>
+          <form action="/courses/offerings/update" method="post" class="form-grid">
+            <%- include('partials/form-fields', {
+              fields: offeringFields,
+              includePrimary: true,
+              selectOptions: { courseID: courseOptionsList, professorID: professorOptions }
+            }) %>
+            <button type="submit" class="btn">Update</button>
+          </form>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
+

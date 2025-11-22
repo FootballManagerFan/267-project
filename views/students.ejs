@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Students • Registration System</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="/js/main.js" defer></script>
+  </head>
+  <body>
+    <%- include('partials/navbar') %>
+    <main class="container">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Records</p>
+          <h1>Students</h1>
+        </div>
+        <p class="page-description">Capture student demographics, majors, and enrollment history.</p>
+      </header>
+      <%- include('partials/messages') %>
+
+      <section class="panel">
+        <header class="panel-header">
+          <h2>Student Directory</h2>
+        </header>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Major</th>
+                <th>Classification</th>
+                <th>Address</th>
+                <th>Total Enrollments</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (items.length) { %>
+                <% items.forEach((student) => { %>
+                  <tr>
+                    <td><%= student.studentID %></td>
+                    <td><%= student.firstName %> <%= student.lastName %></td>
+                    <td><%= student.email %></td>
+                    <td><%= student.major || '—' %></td>
+                    <td><%= student.classification || '—' %></td>
+                    <td><%= student.address || '—' %></td>
+                    <td><%= student.total_enrollments %></td>
+                    <td>
+                      <form
+                        action="/students/delete/<%= student.studentID %>"
+                        method="post"
+                        onsubmit="return confirmDelete()"
+                      >
+                        <button type="submit" class="btn danger ghost">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="9">No students found.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="panel-grid">
+        <section class="panel">
+          <h2>Add Student</h2>
+          <form action="/students/create" method="post" class="form-grid">
+            <%- include('partials/form-fields', { fields, includePrimary: false, selectOptions: {} }) %>
+            <button type="submit" class="btn primary">Create</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Update Student</h2>
+          <form action="/students/update" method="post" class="form-grid">
+            <%- include('partials/form-fields', { fields, includePrimary: true, selectOptions: {} }) %>
+            <button type="submit" class="btn">Update</button>
+          </form>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
+

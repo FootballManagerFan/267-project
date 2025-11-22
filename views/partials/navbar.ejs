@@ -1,0 +1,35 @@
+<nav class="global-nav">
+  <div class="brand">
+    <a href="/dashboard">Registration System</a>
+  </div>
+  <button class="nav-toggle" aria-label="Toggle navigation">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  <ul class="nav-links">
+    <% if (Array.isArray(navLinks)) { %>
+      <% navLinks.forEach((link) => { 
+        const allowed = !link.roles || (currentUser && link.roles.includes(currentUser.role));
+        if (!allowed) { return; }
+        const isActive = currentPath.startsWith(link.href);
+      %>
+        <li class="<%= isActive ? 'active' : '' %>">
+          <a href="<%= link.href %>"><%= link.label %></a>
+        </li>
+      <% }); %>
+    <% } %>
+  </ul>
+  <% if (currentUser) { %>
+    <div class="nav-user">
+      <div>
+        <span class="nav-user__name"><%= currentUser.username %></span>
+        <span class="nav-user__role"><%= currentUser.role %></span>
+      </div>
+      <form method="post" action="/logout">
+        <button type="submit" class="btn ghost">Logout</button>
+      </form>
+    </div>
+  <% } %>
+</nav>
+

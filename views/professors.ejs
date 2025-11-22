@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Professors • Registration System</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="/js/main.js" defer></script>
+  </head>
+  <body>
+    <%- include('partials/navbar') %>
+    <main class="container">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">People</p>
+          <h1>Professors</h1>
+        </div>
+        <p class="page-description">
+          Maintain faculty records, teaching assignments, and contact information.
+        </p>
+      </header>
+      <%- include('partials/messages') %>
+
+      <section class="panel">
+        <header class="panel-header">
+          <h2>Faculty Directory</h2>
+        </header>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Office</th>
+                <th>Department</th>
+                <th>Title</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (items.length) { %>
+                <% items.forEach((professor) => { %>
+                  <tr>
+                    <td><%= professor.professorID %></td>
+                    <td><%= professor.firstName %> <%= professor.lastName %></td>
+                    <td><%= professor.email %></td>
+                    <td><%= professor.officeNumber || '—' %></td>
+                    <td><%= professor.department_name || professor.departmentID %></td>
+                    <td><%= professor.title || '—' %></td>
+                    <td>
+                      <form
+                        action="/professors/delete/<%= professor.professorID %>"
+                        method="post"
+                        onsubmit="return confirmDelete()"
+                      >
+                        <button type="submit" class="btn danger ghost">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="7">No professors found.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <% const departmentOptions = departments.map((dept) => ({ value: dept.departmentID, label: dept.deptName })); %>
+
+      <div class="panel-grid">
+        <section class="panel">
+          <h2>Add Professor</h2>
+          <form action="/professors/create" method="post" class="form-grid">
+            <%- include('partials/form-fields', {
+              fields,
+              includePrimary: false,
+              selectOptions: { departmentID: departmentOptions }
+            }) %>
+            <button type="submit" class="btn primary">Create</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Update Professor</h2>
+          <form action="/professors/update" method="post" class="form-grid">
+            <%- include('partials/form-fields', {
+              fields,
+              includePrimary: true,
+              selectOptions: { departmentID: departmentOptions }
+            }) %>
+            <button type="submit" class="btn">Update</button>
+          </form>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
+

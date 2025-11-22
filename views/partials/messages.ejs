@@ -1,0 +1,15 @@
+<% const hasMessages = messages && (messages.success?.length || messages.error?.length || messages.info?.length); %>
+<% if (hasMessages) { %>
+  <div class="flash-wrapper">
+    <% (messages.success || []).forEach((msg) => { %>
+      <div class="flash success"><%= msg %></div>
+    <% }) %>
+    <% (messages.error || []).forEach((msg) => { %>
+      <div class="flash error"><%= msg %></div>
+    <% }) %>
+    <% (messages.info || []).forEach((msg) => { %>
+      <div class="flash info"><%= msg %></div>
+    <% }) %>
+  </div>
+<% } %>
+

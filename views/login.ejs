@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title || 'Sign In' %> • Registration System</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="auth-page">
+    <main class="auth-card">
+      <h1>University Registration</h1>
+      <p class="subheading">Sign in to manage the system</p>
+      <%- include('partials/messages') %>
+      <form action="/login" method="post" class="form-grid">
+        <label>
+          Username
+          <input type="text" name="username" placeholder="admin" required />
+        </label>
+        <label>
+          Password
+          <input type="password" name="password" placeholder="••••••••" required />
+        </label>
+        <button type="submit" class="btn primary">Sign In</button>
+      </form>
+      <div class="auth-hint">
+        <p>Default admin credentials: <code>admin / Admin@123</code></p>
+        <small>Change this after your first login.</small>
+      </div>
+    </main>
+    <script src="/js/main.js" defer></script>
+  </body>
+</html>
+

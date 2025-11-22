@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Departments • Registration System</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="/js/main.js" defer></script>
+  </head>
+  <body>
+    <%- include('partials/navbar') %>
+    <main class="container">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Administration</p>
+          <h1>Departments</h1>
+        </div>
+        <p class="page-description">Manage departments and their leadership assignments.</p>
+      </header>
+      <%- include('partials/messages') %>
+
+      <section class="panel">
+        <header class="panel-header">
+          <h2>Current Departments</h2>
+        </header>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <% fields.forEach((field) => { %>
+                  <th><%= field.label %></th>
+                <% }) %>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (items.length) { %>
+                <% items.forEach((department) => { %>
+                  <tr>
+                    <% fields.forEach((field) => { %>
+                      <td><%= department[field.name] || '—' %></td>
+                    <% }) %>
+                    <td>
+                      <form
+                        action="/departments/delete/<%= department[fields[0].name] %>"
+                        method="post"
+                        onsubmit="return confirmDelete()"
+                      >
+                        <button type="submit" class="btn danger ghost">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="<%= fields.length + 1 %>">No departments found.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="panel-grid">
+        <section class="panel">
+          <h2>Create Department</h2>
+          <form action="/departments/create" method="post" class="form-grid">
+            <%- include('partials/form-fields', { fields, includePrimary: false, selectOptions: {} }) %>
+            <button type="submit" class="btn primary">Create</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Update Department</h2>
+          <form action="/departments/update" method="post" class="form-grid">
+            <%- include('partials/form-fields', { fields, includePrimary: true, selectOptions: {} }) %>
+            <button type="submit" class="btn">Update</button>
+          </form>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
+

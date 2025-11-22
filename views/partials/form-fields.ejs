@@ -1,0 +1,41 @@
+<% const filteredFields = fields.filter((field) => includePrimary || !field.auto); %>
+<% filteredFields.forEach((field) => { 
+  const optionList = selectOptions && selectOptions[field.name];
+%>
+  <label>
+    <span><%= field.label %></span>
+    <% if (Array.isArray(optionList)) { %>
+      <select
+        name="<%= field.name %>"
+        <%= field.required && !includePrimary ? 'required' : '' %>
+      >
+        <option value="">Select <%= field.label %></option>
+        <% optionList.forEach((option) => { %>
+          <option
+            value="<%= option.value %>"
+            <%= (typeof initialValues !== 'undefined' && initialValues && initialValues[field.name] == option.value) ? 'selected' : '' %>
+          >
+            <%= option.label %>
+          </option>
+        <% }) %>
+      </select>
+    <% } else if (field.type === 'textarea') { %>
+      <textarea
+        name="<%= field.name %>"
+        placeholder="Enter <%= field.label.toLowerCase() %>"
+        <%= field.required && !includePrimary ? 'required' : '' %>
+      ><%- (typeof initialValues !== 'undefined' && initialValues && initialValues[field.name]) || '' %></textarea>
+    <% } else { %>
+      <input
+        type="<%= field.type || 'text' %>"
+        name="<%= field.name %>"
+        value="<%= (typeof initialValues !== 'undefined' && initialValues) ? initialValues[field.name] || '' : '' %>"
+        placeholder="Enter <%= field.label.toLowerCase() %>"
+        <%= field.required && !includePrimary ? 'required' : '' %>
+        <%= field.auto && includePrimary ? 'readonly' : '' %>
+        <%= field.type === 'number' ? 'step="1"' : '' %>
+      />
+    <% } %>
+  </label>
+<% }) %>
+

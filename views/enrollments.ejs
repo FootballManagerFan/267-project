@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enrollments • Registration System</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="/js/main.js" defer></script>
+  </head>
+  <body>
+    <%- include('partials/navbar') %>
+    <main class="container">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Registrar</p>
+          <h1>Enrollments</h1>
+        </div>
+        <p class="page-description">
+          Process registrations with automatic seat checks and historical tracking.
+        </p>
+      </header>
+      <%- include('partials/messages') %>
+
+      <section class="panel">
+        <header class="panel-header">
+          <h2>Recent Enrollments</h2>
+        </header>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Student</th>
+                <th>Course</th>
+                <th>Term</th>
+                <th>Status</th>
+                <th>Grade</th>
+                <th>Seats Left</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (enrollments.length) { %>
+                <% enrollments.forEach((row) => { %>
+                  <tr>
+                    <td><%= row.enrollmentID %></td>
+                    <td><%= row.firstName %> <%= row.lastName %></td>
+                    <td>
+                      <strong><%= row.courseName %></strong>
+                      <small><%= row.semester %> <%= row.year %></small>
+                    </td>
+                    <td><%= row.semester %> <%= row.year %></td>
+                    <td><%= row.status || 'enrolled' %></td>
+                    <td><%= row.grade || '—' %></td>
+                    <td class="<%= row.seats_available <= 5 ? 'warning' : '' %>">
+                      <%= row.seats_available %>
+                    </td>
+                    <td>
+                      <form
+                        action="/enrollments/delete/<%= row.enrollmentID %>"
+                        method="post"
+                        onsubmit="return confirmDelete()"
+                      >
+                        <button type="submit" class="btn danger ghost">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="8">No enrollments found.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <% 
+        const studentOptions = students.map((student) => ({
+          value: student.studentID,
+          label: `${student.lastName}, ${student.firstName}`
+        }));
+        const offeringOptions = offerings.map((offering) => ({
+          value: offering.offeringID,
+          label: `${offering.courseName} (${offering.semester} ${offering.year}) — ${offering.seats_available} seats`
+        }));
+      %>
+
+      <div class="panel-grid">
+        <section class="panel">
+          <h2>Enroll Student</h2>
+          <form action="/enrollments/create" method="post" class="form-grid">
+            <%- include('partials/form-fields', {
+              fields,
+              includePrimary: false,
+              selectOptions: { studentID: studentOptions, offeringID: offeringOptions }
+            }) %>
+            <button type="submit" class="btn primary">Enroll</button>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Update Enrollment</h2>
+          <form action="/enrollments/update" method="post" class="form-grid">
+            <%- include('partials/form-fields', {
+              fields,
+              includePrimary: true,
+              selectOptions: { studentID: studentOptions, offeringID: offeringOptions }
+            }) %>
+            <button type="submit" class="btn">Update</button>
+          </form>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
+

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard • Registration System</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <script src="/js/main.js" defer></script>
+  </head>
+  <body>
+    <%- include('partials/navbar') %>
+    <main class="container">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Welcome back</p>
+          <h1>Dashboard</h1>
+        </div>
+        <div class="page-header__meta">
+          <span>Today: <%= new Date().toLocaleDateString() %></span>
+        </div>
+      </header>
+      <%- include('partials/messages') %>
+
+      <section class="panel stats-grid">
+        <article class="stat-card">
+          <p>Departments</p>
+          <h3><%= stats.departments %></h3>
+        </article>
+        <article class="stat-card">
+          <p>Professors</p>
+          <h3><%= stats.professors %></h3>
+        </article>
+        <article class="stat-card">
+          <p>Courses</p>
+          <h3><%= stats.courses %></h3>
+        </article>
+        <article class="stat-card">
+          <p>Students</p>
+          <h3><%= stats.students %></h3>
+        </article>
+        <article class="stat-card full">
+          <p>Active Enrollments</p>
+          <h3><%= stats.activeEnrollments %></h3>
+        </article>
+      </section>
+
+      <section class="panel">
+        <header class="panel-header">
+          <div>
+            <p class="eyebrow">Capacity Watch</p>
+            <h2>Courses With Most Open Seats</h2>
+          </div>
+        </header>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Offering</th>
+                <th>Course</th>
+                <th>Capacity</th>
+                <th>Available</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (topAvailability.length) { %>
+                <% topAvailability.forEach((row) => { %>
+                  <tr>
+                    <td>#<%= row.offering_id %></td>
+                    <td>
+                      <strong><%= row.course_name %></strong>
+                      <small><%= row.semester %> <%= row.year %></small>
+                    </td>
+                    <td><%= row.capacity %></td>
+                    <td class="<%= row.seats_available <= 5 ? 'warning' : '' %>">
+                      <%= row.seats_available %>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="4">No active offerings found.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
+
