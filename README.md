@@ -69,7 +69,7 @@ registration-system/
    DB_HOST=localhost
    DB_PORT=3306
    DB_USER=root
-   DB_PASSWORD=$10Summer2004!
+   DB_PASSWORD=yourpassword!
    DB_NAME=registration_db
    DEFAULT_ADMIN_PASSWORD=Admin@123
    ```
