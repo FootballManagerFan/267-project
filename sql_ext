@@ -1,0 +1,278 @@
+-- ==========================================
+-- Registration System - Full prod SQL
+-- Creates DB, tables, sample data,
+-- views, and default users (incl. admin)
+-- ==========================================
+
+-- Drop & recreate database
+DROP DATABASE IF EXISTS registration_db;
+CREATE DATABASE registration_db;
+USE registration_db;
+
+-- Table
+-- Department table
+CREATE TABLE Department (
+  departmentID INT AUTO_INCREMENT PRIMARY KEY,
+  deptName VARCHAR(120) NOT NULL,
+  officeLocation VARCHAR(80),
+  phoneNumber VARCHAR(40)
+) ENGINE=InnoDB;
+
+-- Professor table
+CREATE TABLE Professor (
+  professorID INT AUTO_INCREMENT PRIMARY KEY,
+  firstName VARCHAR(60) NOT NULL,
+  lastName VARCHAR(60) NOT NULL,
+  email VARCHAR(120) NOT NULL UNIQUE,
+  officeNumber VARCHAR(40),
+  title VARCHAR(80),
+  departmentID INT,
+  CONSTRAINT fk_professor_department
+    FOREIGN KEY (departmentID) REFERENCES Department(departmentID)
+    ON UPDATE CASCADE
+    ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- Course table
+CREATE TABLE Course (
+  courseID INT AUTO_INCREMENT PRIMARY KEY,
+  courseName VARCHAR(120) NOT NULL,
+  credits INT NOT NULL,
+  description TEXT,
+  departmentID INT,
+  CONSTRAINT fk_course_department
+    FOREIGN KEY (departmentID) REFERENCES Department(departmentID)
+    ON UPDATE CASCADE
+    ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- Student table
+CREATE TABLE Student (
+  studentID INT AUTO_INCREMENT PRIMARY KEY,
+  firstName VARCHAR(60) NOT NULL,
+  lastName VARCHAR(60) NOT NULL,
+  email VARCHAR(120) NOT NULL UNIQUE,
+  major INT,
+  classification VARCHAR(30),
+  address VARCHAR(200),
+  CONSTRAINT fk_student_department
+    FOREIGN KEY (major) REFERENCES Department(departmentID)
+    ON UPDATE CASCADE
+    ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- CourseOffering table
+CREATE TABLE CourseOffering (
+  offeringID INT AUTO_INCREMENT PRIMARY KEY,
+  courseID INT NOT NULL,
+  professorID INT NOT NULL,
+  semester VARCHAR(20) NOT NULL,
+  year INT NOT NULL,
+  capacity INT NOT NULL,
+  roomNumber VARCHAR(40),
+  scheduleTime VARCHAR(80),
+  CONSTRAINT fk_offering_course
+    FOREIGN KEY (courseID) REFERENCES Course(courseID)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT fk_offering_professor
+    FOREIGN KEY (professorID) REFERENCES Professor(professorID)
+    ON UPDATE CASCADE
+    ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- Enrollment table
+CREATE TABLE Enrollment (
+  enrollmentID INT AUTO_INCREMENT PRIMARY KEY,
+  studentID INT NOT NULL,
+  offeringID INT NOT NULL,
+  enrollmentDate DATE NOT NULL,
+  grade VARCHAR(10),
+  status VARCHAR(40),
+  CONSTRAINT fk_enrollment_student
+    FOREIGN KEY (studentID) REFERENCES Student(studentID)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT fk_enrollment_offering
+    FOREIGN KEY (offeringID) REFERENCES CourseOffering(offeringID)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT uc_student_offering UNIQUE (studentID, offeringID)
+) ENGINE=InnoDB;
+
+-- Users table for authentication & roles
+CREATE TABLE Users (
+  userID INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(60) NOT NULL UNIQUE,
+  passwordHash VARCHAR(255) NOT NULL,
+  role ENUM('basic','manager','admin') NOT NULL DEFAULT 'basic',
+  linkedStudentID INT NULL,
+  linkedProfessorID INT NULL,
+  CONSTRAINT fk_user_student
+    FOREIGN KEY (linkedStudentID) REFERENCES Student(studentID)
+    ON UPDATE CASCADE
+    ON DELETE SET NULL,
+  CONSTRAINT fk_user_professor
+    FOREIGN KEY (linkedProfessorID) REFERENCES Professor(professorID)
+    ON UPDATE CASCADE
+    ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- ReportSnapshots table for historical report data
+CREATE TABLE ReportSnapshots (
+  snapshotID INT AUTO_INCREMENT PRIMARY KEY,
+  snapshotName VARCHAR(120) NOT NULL,
+  createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  payload JSON NOT NULL
+) ENGINE=InnoDB;
+
+-- Sample Data
+
+-- Departments
+INSERT INTO Department (deptName, officeLocation, phoneNumber) VALUES
+  ('Computer Science', 'Smith Hall 201', '336-555-0101'),
+  ('Mathematics',      'Jones Hall 310', '336-555-0102'),
+  ('Business',         'Business Bldg 120', '336-555-0103');
+
+-- Professors
+INSERT INTO Professor (firstName, lastName, email, officeNumber, title, departmentID) VALUES
+  ('Jane', 'Mason',  'jmason@univ.edu',   'SH-215', 'Associate Professor', 1),
+  ('Tom',  'South',  'tsouth@univ.edu',   'JH-320', 'Professor',           2),
+  ('Linda','Green',  'lgreen@univ.edu',   'BB-130', 'Assistant Professor', 3);
+
+-- Courses
+INSERT INTO Course (courseName, credits, description, departmentID) VALUES
+  ('Introduction to Databases', 3, 'Relational models, SQL, and basic design.', 1),
+  ('Data Structures',           3, 'Lists, trees, graphs, and algorithms.',      1),
+  ('Business Statistics',       3, 'Statistical methods for business decisions.',3);
+
+-- Students
+INSERT INTO Student (firstName, lastName, email, major, classification, address) VALUES
+  ('Alex',  'Kim',   'akim@student.edu',    1, 'Sophomore', '123 Campus Way'),
+  ('Maria', 'Lopez', 'mlopez@student.edu',  3, 'Junior',    '456 University Dr'),
+  ('Jamal', 'Brown', 'jbrown@student.edu',  1, 'Freshman',  '789 Dorm Rd');
+
+-- Course Offerings
+INSERT INTO CourseOffering (courseID, professorID, semester, year, capacity, roomNumber, scheduleTime) VALUES
+  (1, 1, 'Fall', 2025, 30, 'SH-101', 'MWF 10:00-10:50'),
+  (2, 1, 'Fall', 2025, 25, 'SH-105', 'TR  09:30-10:45'),
+  (3, 3, 'Fall', 2025, 40, 'BB-210', 'MWF 11:00-11:50');
+
+-- Enrollments
+INSERT INTO Enrollment (studentID, offeringID, enrollmentDate, grade, status) VALUES
+  (1, 1, '2025-08-20', NULL,  'Enrolled'),
+  (2, 1, '2025-08-21', NULL,  'Enrolled'),
+  (3, 1, '2025-08-22', NULL,  'Enrolled'),
+  (2, 3, '2025-08-21', NULL,  'Enrolled');
+
+-- Default User
+-- Passwords:
+--   admin    / Admin@123
+--   manager1 / Manager@123
+--   student1 / Student@123
+INSERT INTO Users (username, passwordHash, role, linkedStudentID, linkedProfessorID) VALUES
+  (
+    'admin',
+    '$2b$12$N20VU254uI20U5BHicVDbONOqG5KMoMMA.T5dC/nH4qUGRxXGfYa2', -- Admin@123
+    'admin',
+    NULL,
+    NULL
+  ),
+  (
+    'manager1',
+    '$2b$12$xRrfVFeTT.9uCdK79h/Hh.RsbcNCo8xNBOEap1FApRQhVyduNlE46', -- Manager@123
+    'manager',
+    NULL,
+    1  -- linked to Professor "Mason"
+  ),
+  (
+    'student1',
+    '$2b$12$jDg7Zl.K4DoiLPcUoHKM3uULNNfGbVpuW3dVRUr19sNDwTbP4/t0u', -- Student@123
+    'basic',
+    1,  -- linked to Student Alex Kim
+    NULL
+  );
+
+-- Views (for reporting and front-end)
+
+-- View: Course enrollment summary
+CREATE OR REPLACE VIEW vwCourseEnrollmentSummary AS
+SELECT
+  c.courseID,
+  c.courseName,
+  d.deptName AS department,
+  COUNT(e.enrollmentID) AS totalEnrollments,
+  COALESCE(SUM(co.capacity), 0) AS totalCapacity
+FROM Course c
+JOIN Department d ON c.departmentID = d.departmentID
+LEFT JOIN CourseOffering co ON co.courseID = c.courseID
+LEFT JOIN Enrollment e ON e.offeringID = co.offeringID
+GROUP BY c.courseID, c.courseName, d.deptName;
+
+-- View: Student schedule (flat)
+CREATE OR REPLACE VIEW vwStudentSchedule AS
+SELECT
+  s.studentID,
+  s.firstName AS studentFirstName,
+  s.lastName  AS studentLastName,
+  c.courseName,
+  co.semester,
+  co.year,
+  co.roomNumber,
+  co.scheduleTime,
+  e.status,
+  e.grade
+FROM Student s
+JOIN Enrollment e      ON e.studentID = s.studentID
+JOIN CourseOffering co ON co.offeringID = e.offeringID
+JOIN Course c          ON c.courseID = co.courseID;
+
+-- Sample Snapshot Data
+
+
+INSERT INTO ReportSnapshots (snapshotName, payload)
+VALUES
+(
+  'Initial Enrollment Snapshot - Fall 2025',
+  JSON_OBJECT(
+    'totalStudents', (SELECT COUNT(*) FROM Student),
+    'totalEnrollments', (SELECT COUNT(*) FROM Enrollment),
+    'totalCourses', (SELECT COUNT(*) FROM Course),
+    'byDepartment', JSON_ARRAY(
+      JSON_OBJECT(
+        'department', 'Computer Science',
+        'enrollments', (
+          SELECT COUNT(*)
+          FROM Enrollment e
+          JOIN CourseOffering co ON e.offeringID = co.offeringID
+          JOIN Course c ON co.courseID = c.courseID
+          JOIN Department d ON c.departmentID = d.departmentID
+          WHERE d.deptName = 'Computer Science'
+        )
+      ),
+      JSON_OBJECT(
+        'department', 'Mathematics',
+        'enrollments', (
+          SELECT COUNT(*)
+          FROM Enrollment e
+          JOIN CourseOffering co ON e.offeringID = co.offeringID
+          JOIN Course c ON co.courseID = c.courseID
+          JOIN Department d ON c.departmentID = d.departmentID
+          WHERE d.deptName = 'Mathematics'
+        )
+      ),
+      JSON_OBJECT(
+        'department', 'Business',
+        'enrollments', (
+          SELECT COUNT(*)
+          FROM Enrollment e
+          JOIN CourseOffering co ON e.offeringID = co.offeringID
+          JOIN Course c ON co.courseID = c.courseID
+          JOIN Department d ON c.departmentID = d.departmentID
+          WHERE d.deptName = 'Business'
+        )
+      )
+    )
+  )
+);
+
